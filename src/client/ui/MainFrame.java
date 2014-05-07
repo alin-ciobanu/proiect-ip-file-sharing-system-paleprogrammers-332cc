@@ -5,17 +5,14 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
 
-    LoginPanel loginPanel;
-
-
     public MainFrame () {
 
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setLayout(new FlowLayout());
+        this.setLayout(new GridLayout());
+        this.setPreferredSize(new Dimension(400, 150));
 
-        loginPanel = new LoginPanel();
-
-        this.add(loginPanel);
+        ClientPanel clientPanel = new ClientPanel();
+        this.add(clientPanel);
 
         this.pack();
         this.setVisible(true);
