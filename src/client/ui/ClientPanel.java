@@ -23,6 +23,9 @@ public class ClientPanel extends JPanel implements ActionListener {
     JTextField portTextField = new JTextField();
     JTextField fileNameTextField = new JTextField();
 
+    JButton fileChooserButton = new JButton("Choose File");
+    JFileChooser fileChooser = new JFileChooser();
+
     JPanel ipPanel = new JPanel();
     JPanel portPanel = new JPanel();
     JPanel fileNamePanel = new JPanel();
@@ -46,6 +49,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         fileNamePanel.setLayout(new BoxLayout(fileNamePanel, BoxLayout.X_AXIS));
         fileNamePanel.add(fileNameLabel);
         fileNamePanel.add(fileNameTextField);
+        fileNamePanel.add(fileChooserButton);
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -55,6 +59,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         this.add(submitButton);
 
         submitButton.addActionListener(this);
+        fileChooserButton.addActionListener(this);
 
         this.setVisible(true);
 
@@ -90,16 +95,31 @@ public class ClientPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
 
-        ipAddress = ipTextField.getText();
-        port = Integer.parseInt(portTextField.getText());
-        file = fileNameTextField.getText();
+        if(actionEvent.getSource() == fileChooserButton)
+        {
+                int retVal = fileChooser.showOpenDialog(ClientPanel.this);
+                if(retVal == JFileChooser.APPROVE_OPTION){
+                    File file = fileChooser.getSelectedFile();
+                    fileNameTextField.setText(file.getAbsolutePath());
+                }
+        } else
+        {
+            ipAddress = ipTextField.getText();
+            try{
+                port = Integer.parseInt(portTextField.getText());
+            } catch (NumberFormatException e){
+                port = 10001;
+                portTextField.setText("10001");
+            }
+            file = fileNameTextField.getText();
 
-        try {
-            connect();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            try {
+                connect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
 
     }
