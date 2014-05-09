@@ -9,7 +9,7 @@ public class MainFrame extends JFrame {
 
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLayout(new GridLayout());
-        this.setPreferredSize(new Dimension(400, 150));
+        this.setPreferredSize(new Dimension(400, 450));
 
         ClientPanel clientPanel = new ClientPanel();
         this.add(clientPanel);
