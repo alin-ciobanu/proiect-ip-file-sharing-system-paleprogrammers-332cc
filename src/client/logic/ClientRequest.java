@@ -1,19 +1,34 @@
 package client.logic;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.Serializable;
 
 public class ClientRequest implements Serializable {
 
-    public final int GET = 101;
-    public final int CLOSE = 102;
+    public static final int CLOSE = 102;
+    public static final int GET = 302;
+    public static final int REGISTER = 103;
 
     private int requestCode;
 
-    /*
-        urmatoarele campuri vor fi setate doar daca requestCode va fi setat pe GET
-     */
-    private String whatFile; // what file you want to transfer
+    private String username;
+    private DefaultMutableTreeNode fileTreeToShare;
 
+    public DefaultMutableTreeNode getFileTreeToShare() {
+        return fileTreeToShare;
+    }
+
+    public void setFileTreeToShare(DefaultMutableTreeNode fileTreeToShare) {
+        this.fileTreeToShare = fileTreeToShare;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public int getRequestCode() {
         return requestCode;
@@ -22,14 +37,5 @@ public class ClientRequest implements Serializable {
     public void setRequestCode(int requestCode) {
         this.requestCode = requestCode;
     }
-
-    public String getWhatFile() {
-        return whatFile;
-    }
-
-    public void setWhatFile(String whatFile) {
-        this.whatFile = whatFile;
-    }
-
 
 }

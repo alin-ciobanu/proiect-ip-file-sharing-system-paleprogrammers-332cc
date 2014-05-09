@@ -9,12 +9,12 @@ import java.util.ArrayList;
 public class ClientTalkerThread extends Thread {
 
     Socket clientSocket;
-    ArrayList<Socket> allSockets;
+    ArrayList<User> usersList;
 
-    public ClientTalkerThread (Socket clientSocket, ArrayList<Socket> allSockets) {
+    public ClientTalkerThread (Socket clientSocket, ArrayList<User> usersList) {
 
         this.clientSocket = clientSocket;
-        this.allSockets = allSockets;
+        this.usersList = usersList;
 
     }
 
@@ -61,19 +61,29 @@ public class ClientTalkerThread extends Thread {
                 e.printStackTrace();
             }
 
-            if (request.getRequestCode() == request.GET) {
-                String file = request.getWhatFile();
-                ServerResponse response = new ServerResponse();
-                response.readFile(file);
+            int reqCode = request.getRequestCode();
+
+            if (reqCode == request.REGISTER) {
+
+                User user = new User();
+                user.setAlias(request.getUsername());
+                user.setSharedTree(request.getFileTreeToShare());
+                user.setSocket(clientSocket);
+                usersList.add(user);
+
+                ServerResponse serverResponse = new ServerResponse();
+                serverResponse.setUsersList(usersList);
                 try {
-                    objectOutputStream.writeObject(response);
+                    objectOutputStream.writeObject(serverResponse);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
             }
 
-            if (request.getRequestCode() == request.CLOSE) {
-                allSockets.remove(clientSocket);
+            else if (request.getRequestCode() == request.CLOSE) {
+                User userBySocket = getUserBySocket();
+                usersList.remove(userBySocket);
                 try {
                     clientSocket.close();
                 } catch (IOException e) {
@@ -84,4 +94,14 @@ public class ClientTalkerThread extends Thread {
         }
 
     }
+
+    private User getUserBySocket () {
+        for (User user : usersList) {
+            if (user.getSocket().equals(clientSocket)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
 }

@@ -1,8 +1,8 @@
 package client.ui;
 
 import client.logic.ClientRequest;
-import org.apache.commons.io.FileUtils;
 import server.logic.ServerResponse;
+import server.logic.User;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -21,24 +21,30 @@ import java.util.Arrays;
 
 public class ClientPanel extends JPanel implements ActionListener {
 
+    Socket socketToServer;
+    ObjectOutputStream objectOutputStreamToServer;
+    ObjectInputStream objectInputStreamToServer;
+    ArrayList<User> usersList;
+
+
     JTree fileTree = new JTree(new DefaultMutableTreeNode());
     JTree selectedFileTree = new JTree(new DefaultMutableTreeNode());
 
     JLabel aliasLabel = new JLabel("ALIAS");
     JLabel ipLabel = new JLabel("IP");
     JLabel portLabel = new JLabel("PORT");
-    JLabel fileNameLabel = new JLabel("Filename");
+    JLabel usernameLabel = new JLabel("Alias");
 
     JTextField aliasTextField = new JTextField();
     JTextField ipTextField = new JTextField();
     JTextField portTextField = new JTextField();
-    JTextField fileNameTextField = new JTextField();
+    JTextField usernameTextField = new JTextField();
 
     JPanel inputPanel = new JPanel();
     JPanel aliasPanel = new JPanel();
     JPanel ipPanel = new JPanel();
     JPanel portPanel = new JPanel();
-    JPanel fileNamePanel = new JPanel();
+    JPanel usernamePanel = new JPanel();
     JPanel fileTreePanel = new JPanel();
     JPanel selectedTreePanel = new JPanel();
     JSplitPane treesPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,fileTreePanel,selectedTreePanel);
@@ -46,13 +52,13 @@ public class ClientPanel extends JPanel implements ActionListener {
     JScrollPane fileTreePane = new JScrollPane();
     JScrollPane selectedTreePane = new JScrollPane();
 
-    JButton submitButton = new JButton("Get");
+    JButton submitButton = new JButton("Register");
     JButton fileChooserButton = new JButton("Choose File");
     JFileChooser fileChooser = new JFileChooser();
 
     String ipAddress;
     int port;
-    String file;
+    String username;
 
     public ClientPanel () {
         aliasPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE,10));
@@ -68,17 +74,17 @@ public class ClientPanel extends JPanel implements ActionListener {
         portPanel.add(portLabel);
         portPanel.add(portTextField);
 
-        fileNamePanel.setLayout(new BoxLayout(fileNamePanel, BoxLayout.X_AXIS));
-        fileNamePanel.add(fileNameLabel);
-        fileNamePanel.add(fileNameTextField);
-        fileNamePanel.add(fileChooserButton);
-        fileNameTextField.setPreferredSize(new Dimension(100,10));
+        usernamePanel.setLayout(new BoxLayout(usernamePanel, BoxLayout.X_AXIS));
+        usernamePanel.add(usernameLabel);
+        usernamePanel.add(usernameTextField);
+        usernamePanel.add(fileChooserButton);
+        usernameTextField.setPreferredSize(new Dimension(100,10));
 
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
 
         inputPanel.add(ipPanel);
         inputPanel.add(portPanel);
-        inputPanel.add(fileNamePanel);
+        inputPanel.add(usernamePanel);
         inputPanel.add(submitButton);
 
         this.add(inputPanel);
@@ -104,30 +110,22 @@ public class ClientPanel extends JPanel implements ActionListener {
 
     }
 
-    private void connect () throws IOException, ClassNotFoundException {
+    private void connectToServer () throws IOException, ClassNotFoundException {
 
-        Socket socket = new Socket(ipAddress, port);
-        ObjectOutputStream objectOutputStream = null;
-        ObjectInputStream objectInputStream = null;
-        objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-        objectInputStream = new ObjectInputStream(socket.getInputStream());
+        socketToServer = new Socket(ipAddress, port);
+        objectOutputStreamToServer = null;
+        objectInputStreamToServer = null;
+        objectOutputStreamToServer = new ObjectOutputStream(socketToServer.getOutputStream());
+        objectInputStreamToServer = new ObjectInputStream(socketToServer.getInputStream());
 
         ClientRequest request = new ClientRequest();
-        request.setRequestCode(request.GET);
-        request.setWhatFile(file);
-        objectOutputStream.writeObject(request);
+        request.setRequestCode(request.REGISTER);
+        request.setUsername(username);
+        request.setFileTreeToShare((DefaultMutableTreeNode)selectedFileTree.getModel().getRoot());
+        objectOutputStreamToServer.writeObject(request);
 
-        ServerResponse response = (ServerResponse) objectInputStream.readObject();
-        byte[] bytes = response.getFileAsBytes();
-
-        File outputFile = new File("C:\\out.dat");
-        FileUtils.writeByteArrayToFile(outputFile, bytes, false);
-
-        request = new ClientRequest();
-        request.setRequestCode(request.CLOSE);
-        objectOutputStream.writeObject(request);
-
-        socket.close();
+        ServerResponse serverResponse = (ServerResponse) objectInputStreamToServer.readObject();
+        usersList = serverResponse.getUsersList();
 
     }
 
@@ -156,19 +154,19 @@ public class ClientPanel extends JPanel implements ActionListener {
                     this.revalidate();
                     this.repaint();
                 }
-        } else
+        } else if (actionEvent.getSource() == submitButton)
         {
             ipAddress = ipTextField.getText();
             try{
                 port = Integer.parseInt(portTextField.getText());
             } catch (NumberFormatException e){
-                port = 10001;
-                portTextField.setText("10001");
+                port = 0;
+                portTextField.setText("0");
             }
-            file = fileNameTextField.getText();
+            username = usernameTextField.getText();
 
             try {
-                connect();
+                connectToServer();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {

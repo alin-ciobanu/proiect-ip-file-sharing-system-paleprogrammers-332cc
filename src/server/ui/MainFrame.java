@@ -1,6 +1,7 @@
 package server.ui;
 
 import server.logic.ClientTalkerThread;
+import server.logic.User;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +14,7 @@ public class MainFrame extends JFrame {
 
     MainPanel mainPanel;
     ServerSocket serverSocket;
-    ArrayList<Socket> clientSockets;
+    ArrayList<User> usersList;
 
     private final int PORT = 10001;
 
@@ -28,13 +29,12 @@ public class MainFrame extends JFrame {
         this.pack();
         this.setVisible(true);
 
-        clientSockets = new ArrayList<Socket>();
+        usersList = new ArrayList<User>();
         openListenSocket();
 
         while (true) {
             Socket socket = acceptClient();
-            clientSockets.add(socket);
-            ClientTalkerThread clientTalkerThread = new ClientTalkerThread(socket, clientSockets);
+            ClientTalkerThread clientTalkerThread = new ClientTalkerThread(socket, usersList);
             clientTalkerThread.start();
         }
 

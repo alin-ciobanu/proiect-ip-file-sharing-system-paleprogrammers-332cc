@@ -1,45 +1,60 @@
 package server.logic;
 
-import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.io.Serializable;
+import java.net.Socket;
 
 /**
  * Created by Alin on 08/05/14.
  */
-public class User {
+public class User implements Serializable {
     private String alias;
-    private int ip;
-    private JTree fileSystem;
+    private DefaultMutableTreeNode sharedTree;
+    private Socket socket;
 
-    public User(String alias, int ip, JTree fileSystem){
-        this.alias = alias;
-        this.ip = ip;
-        this.fileSystem = fileSystem;
+    public DefaultMutableTreeNode getSharedTree() {
+        return sharedTree;
     }
 
-    public User(){
-        alias = "";
-        fileSystem = new JTree();
+    public void setSharedTree(DefaultMutableTreeNode sharedTree) {
+        this.sharedTree = sharedTree;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
 
     public String getAlias(){
         return alias;
     }
 
-    public int getIp(){
-        return ip;
-    }
-
-    public JTree getFileSystem(){
-        return fileSystem;
-    }
-
     public void setAlias(String alias){
         this.alias = alias;
     }
-    public void setIp(int ip){
-        this.ip = ip;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (alias != null ? !alias.equals(user.alias) : user.alias != null) return false;
+        if (sharedTree != null ? !sharedTree.equals(user.sharedTree) : user.sharedTree != null) return false;
+        if (socket != null ? !socket.equals(user.socket) : user.socket != null) return false;
+
+        return true;
     }
-    public void setFileSystem(JTree fileSystem){
-        this.fileSystem = fileSystem;
+
+    @Override
+    public int hashCode() {
+        int result = alias != null ? alias.hashCode() : 0;
+        result = 31 * result + (sharedTree != null ? sharedTree.hashCode() : 0);
+        result = 31 * result + (socket != null ? socket.hashCode() : 0);
+        return result;
     }
 }
