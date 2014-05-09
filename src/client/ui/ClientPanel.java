@@ -126,6 +126,7 @@ public class ClientPanel extends JPanel implements ActionListener {
 
         ServerResponse serverResponse = (ServerResponse) objectInputStreamToServer.readObject();
         usersList = serverResponse.getUsersList();
+        System.out.println(usersList);
 
     }
 

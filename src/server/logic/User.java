@@ -10,7 +10,7 @@ import java.net.Socket;
 public class User implements Serializable {
     private String alias;
     private DefaultMutableTreeNode sharedTree;
-    private Socket socket;
+    private transient Socket socket;
 
     public DefaultMutableTreeNode getSharedTree() {
         return sharedTree;
