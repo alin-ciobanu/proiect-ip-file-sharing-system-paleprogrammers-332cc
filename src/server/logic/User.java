@@ -8,8 +8,8 @@ import java.net.Socket;
  * Created by Alin on 08/05/14.
  */
 public class User implements Serializable {
-    private String alias;
-    private DefaultMutableTreeNode sharedTree;
+    public String alias;
+    public DefaultMutableTreeNode sharedTree;
     private transient Socket socket;
 
     public DefaultMutableTreeNode getSharedTree() {

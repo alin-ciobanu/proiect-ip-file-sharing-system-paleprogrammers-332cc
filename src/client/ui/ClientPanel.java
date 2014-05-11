@@ -5,9 +5,10 @@ import server.logic.ServerResponse;
 import server.logic.User;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,11 +25,11 @@ public class ClientPanel extends JPanel implements ActionListener {
     Socket socketToServer;
     ObjectOutputStream objectOutputStreamToServer;
     ObjectInputStream objectInputStreamToServer;
-    ArrayList<User> usersList;
-
+    ArrayList<User> usersListSource = new ArrayList<User>();
 
     JTree fileTree = new JTree(new DefaultMutableTreeNode());
-    JTree selectedFileTree = new JTree(new DefaultMutableTreeNode());
+    JTree selectedFileTree = new JTree(new DefaultMutableTreeNode("\\"));
+    JTree downloadedFilesTRee = new JTree(new DefaultMutableTreeNode());
 
     JLabel aliasLabel = new JLabel("ALIAS");
     JLabel ipLabel = new JLabel("IP");
@@ -47,18 +48,31 @@ public class ClientPanel extends JPanel implements ActionListener {
     JPanel usernamePanel = new JPanel();
     JPanel fileTreePanel = new JPanel();
     JPanel selectedTreePanel = new JPanel();
-    JSplitPane treesPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,fileTreePanel,selectedTreePanel);
 
+    JPanel usersListPanel = new JPanel();
+    JPanel usersFilesPanel = new JPanel();
+
+    JList usersList = new JList();
+
+    JTabbedPane managementPane = new JTabbedPane();
     JScrollPane fileTreePane = new JScrollPane();
     JScrollPane selectedTreePane = new JScrollPane();
+    JScrollPane usersListScrollPane = new JScrollPane();
+    JScrollPane usersFilesScrollPane = new JScrollPane();
+
+    JSplitPane treesPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,fileTreePanel,selectedTreePanel);
+    JSplitPane usersPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,usersListPanel,usersFilesPanel);
 
     JButton submitButton = new JButton("Register");
     JButton fileChooserButton = new JButton("Choose File");
+    JButton addFileButton = new JButton("Add File");
+    JButton removeFileButton = new JButton("Remove File");
     JFileChooser fileChooser = new JFileChooser();
 
     String ipAddress;
     int port;
     String username;
+    Boolean changedDirectory = true;
 
     public ClientPanel () {
         aliasPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE,10));
@@ -87,27 +101,59 @@ public class ClientPanel extends JPanel implements ActionListener {
         inputPanel.add(usernamePanel);
         inputPanel.add(submitButton);
 
-        this.add(inputPanel);
-
         fileTreePane.getViewport().add(fileTree);
         fileTreePanel.add(fileTreePane);
-        fileTreePanel.setPreferredSize(new Dimension(150, 400));
-        fileTreePane.setPreferredSize(new Dimension(150, 400));
-        //treesPanel.add(fileTreePanel);
+        fileTreePanel.setPreferredSize(new Dimension(200, 450));
+        fileTreePane.setPreferredSize(new Dimension(200, 450));
 
         selectedTreePane.getViewport().add(selectedFileTree);
         selectedTreePanel.add(selectedTreePane);
-        selectedTreePanel.setPreferredSize(new Dimension(150, 400));
-        selectedTreePane.setPreferredSize(new Dimension(150, 400));
-        //treesPanel.add(selectedTreePanel);
-        //treesPanel.setLayout(new GridLayout(1,2));
-        this.add(treesPanel);
+        selectedTreePanel.add(addFileButton);
+        selectedTreePanel.add(removeFileButton);
+        selectedTreePanel.setPreferredSize(new Dimension(200, 350));
+        selectedTreePane.setPreferredSize(new Dimension(200, 350));
+
+        usersListScrollPane.getViewport().add(usersList);
+
+        User user = new User();
+        user.alias = "Test";
+        user.sharedTree = new DefaultMutableTreeNode("Test");
+        usersListSource.add(user);
+
+        usersList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if(!e.getValueIsAdjusting()){
+                    DefaultMutableTreeNode root = usersListSource.get(usersList.getSelectedIndex()).getSharedTree();
+                    downloadedFilesTRee = new JTree(root);
+                    usersFilesScrollPane.getViewport().add(new JTree(root));
+                }
+            }
+        });
+
+        DefaultListModel listModel = new DefaultListModel();
+        for(User u : usersListSource){
+            listModel.addElement(u.getAlias());
+        }
+        usersList.setModel(listModel);
+        usersListPanel.add(usersFilesScrollPane);
+        usersFilesPanel.add(usersFilesScrollPane);
+
+        managementPane.addTab("Sharing", UIManager.getIcon("FileChooser.upFolderIcon"), treesPanel,
+                "Select the files and folders you want to share with other users");
+        managementPane.addTab("Download", UIManager.getIcon("FileView.floppyDriveIcon"), usersPanel,
+                "Search through what other users have shared");
+
+
         submitButton.addActionListener(this);
+        addFileButton.addActionListener(this);
+        removeFileButton.addActionListener(this);
         fileChooserButton.addActionListener(this);
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
+        this.add(inputPanel);
+        this.add(managementPane);
         this.setVisible(true);
-
     }
 
     private void connectToServer () throws IOException, ClassNotFoundException {
@@ -121,12 +167,17 @@ public class ClientPanel extends JPanel implements ActionListener {
         ClientRequest request = new ClientRequest();
         request.setRequestCode(request.REGISTER);
         request.setUsername(username);
-        request.setFileTreeToShare((DefaultMutableTreeNode)selectedFileTree.getModel().getRoot());
+        request.setFileTreeToShare((DefaultMutableTreeNode) selectedFileTree.getModel().getRoot());
         objectOutputStreamToServer.writeObject(request);
 
         ServerResponse serverResponse = (ServerResponse) objectInputStreamToServer.readObject();
-        usersList = serverResponse.getUsersList();
-        System.out.println(usersList);
+        usersListSource = serverResponse.getUsersList();
+
+        DefaultListModel listModel = new DefaultListModel();
+        for(User u : usersListSource){
+            listModel.addElement(u.getAlias());
+        }
+        usersList.setModel(listModel);
 
     }
 
@@ -135,26 +186,25 @@ public class ClientPanel extends JPanel implements ActionListener {
 
         if(actionEvent.getSource() == fileChooserButton)
         {
-                int retVal = fileChooser.showOpenDialog(ClientPanel.this);
-                if(retVal == JFileChooser.APPROVE_OPTION){
-                    File file = fileChooser.getSelectedFile();
-                    fileTreePane.getViewport().remove(fileTree);
-
-                    fileTree = new JTree(makeTree(null, file));
-                    fileTree.addTreeSelectionListener(new TreeSelectionListener() {
-                        @Override
-                        public void valueChanged(TreeSelectionEvent e) {
-                            System.out.println(e.getPath().toString());
-                            DefaultMutableTreeNode node = (DefaultMutableTreeNode)fileTree.getLastSelectedPathComponent();
-                            DefaultMutableTreeNode sourceTree = (DefaultMutableTreeNode)fileTree.getModel().getRoot();
-                            selectedFileTree = new JTree((DefaultMutableTreeNode)copySubTree(node,sourceTree));
-                            selectedTreePane.getViewport().add(selectedFileTree);
-                        }
-                    });
-                    fileTreePane.getViewport().add(fileTree);
-                    this.revalidate();
-                    this.repaint();
-                }
+            int retVal = fileChooser.showOpenDialog(ClientPanel.this);
+            if(retVal == JFileChooser.APPROVE_OPTION){
+                File file = fileChooser.getSelectedFile();
+                fileTreePane.getViewport().remove(fileTree);
+                fileTree = new JTree(makeTree(null, file));
+                fileTreePane.getViewport().add(fileTree);
+                this.revalidate();
+                this.repaint();
+            }
+            changedDirectory = true;
+        } else if (actionEvent.getSource() == addFileButton){
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode)fileTree.getLastSelectedPathComponent();
+            DefaultMutableTreeNode sourceTree = (DefaultMutableTreeNode)fileTree.getModel().getRoot();
+            DefaultMutableTreeNode originalTree = (DefaultMutableTreeNode)selectedFileTree.getModel().getRoot();
+            selectedFileTree = new JTree((DefaultMutableTreeNode)addNode(node,originalTree));
+            selectedTreePane.getViewport().add(selectedFileTree);
+        } else if (actionEvent.getSource() == removeFileButton){
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedFileTree.getLastSelectedPathComponent();
+            ((DefaultTreeModel)selectedFileTree.getModel()).removeNodeFromParent(node);
         } else if (actionEvent.getSource() == submitButton)
         {
             ipAddress = ipTextField.getText();
@@ -176,8 +226,9 @@ public class ClientPanel extends JPanel implements ActionListener {
         }
     }
 
-    DefaultMutableTreeNode makeTree(DefaultMutableTreeNode root, File file)
+    public DefaultMutableTreeNode makeTree(DefaultMutableTreeNode root, File file)
     {
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode();
         DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(file.getName());
 
         if(root == null){
@@ -194,6 +245,7 @@ public class ClientPanel extends JPanel implements ActionListener {
                 newNode.add(new DefaultMutableTreeNode(child.getName()));
             }
         }
+
         return newNode;
     }
 
@@ -212,4 +264,23 @@ public class ClientPanel extends JPanel implements ActionListener {
         }
         return subRoot;
     }
+
+    public DefaultMutableTreeNode addNode(DefaultMutableTreeNode addedNode, DefaultMutableTreeNode originalNode){
+
+        if(changedDirectory == true){
+            DefaultMutableTreeNode newFolder = (DefaultMutableTreeNode) addedNode.getParent();
+            while(newFolder.getParent() != null){
+                newFolder = (DefaultMutableTreeNode) addedNode.getPreviousLeaf();
+            }
+            newFolder.removeAllChildren();
+            ((DefaultMutableTreeNode)newFolder.getRoot()).add(addedNode);
+            originalNode.add(newFolder);
+            changedDirectory = false;
+        } else {
+            ((DefaultMutableTreeNode)originalNode.getLastChild()).add(addedNode);
+        }
+
+        return originalNode;
+    }
+
 }
