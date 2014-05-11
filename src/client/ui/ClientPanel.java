@@ -67,6 +67,7 @@ public class ClientPanel extends JPanel implements ActionListener {
     JButton fileChooserButton = new JButton("Choose File");
     JButton addFileButton = new JButton("Add File");
     JButton removeFileButton = new JButton("Remove File");
+    JButton downloadButton = new JButton("Download");
     JFileChooser fileChooser = new JFileChooser();
 
     String ipAddress;
@@ -112,6 +113,11 @@ public class ClientPanel extends JPanel implements ActionListener {
         selectedTreePanel.add(removeFileButton);
         selectedTreePanel.setPreferredSize(new Dimension(200, 350));
         selectedTreePane.setPreferredSize(new Dimension(200, 350));
+        selectedTreePanel.setLayout(new BoxLayout(selectedTreePanel,BoxLayout.Y_AXIS));
+        usersListPanel.setPreferredSize(new Dimension(200, 350));
+        //usersListScrollPane.setPreferredSize(new Dimension(200, 350));
+        usersFilesPanel.setPreferredSize(new Dimension(200, 350));
+        //usersFilesScrollPane.setPreferredSize(new Dimension(200, 350));
 
         usersListScrollPane.getViewport().add(usersList);
 
@@ -138,6 +144,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         usersList.setModel(listModel);
         usersListPanel.add(usersFilesScrollPane);
         usersFilesPanel.add(usersFilesScrollPane);
+        usersFilesPanel.add(downloadButton);
 
         managementPane.addTab("Sharing", UIManager.getIcon("FileChooser.upFolderIcon"), treesPanel,
                 "Select the files and folders you want to share with other users");
