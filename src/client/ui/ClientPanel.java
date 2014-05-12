@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.logic.ClientListeningSocketThread;
 import client.logic.ClientRequest;
 import server.logic.ServerResponse;
 import server.logic.User;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,6 +25,7 @@ import java.util.Arrays;
 public class ClientPanel extends JPanel implements ActionListener {
 
     Socket socketToServer;
+    ServerSocket listenSocket;
     ObjectOutputStream objectOutputStreamToServer;
     ObjectInputStream objectInputStreamToServer;
     ArrayList<User> usersListSource = new ArrayList<User>();
@@ -35,17 +38,20 @@ public class ClientPanel extends JPanel implements ActionListener {
     JLabel ipLabel = new JLabel("IP");
     JLabel portLabel = new JLabel("PORT");
     JLabel usernameLabel = new JLabel("Alias");
+    JLabel listeningPortJLabel = new JLabel("Listening port");
 
     JTextField aliasTextField = new JTextField();
     JTextField ipTextField = new JTextField();
     JTextField portTextField = new JTextField();
     JTextField usernameTextField = new JTextField();
+    JTextField listeningPortJTextField = new JTextField();
 
     JPanel inputPanel = new JPanel();
     JPanel aliasPanel = new JPanel();
     JPanel ipPanel = new JPanel();
     JPanel portPanel = new JPanel();
     JPanel usernamePanel = new JPanel();
+    JPanel listeningPortPanel = new JPanel();
     JPanel fileTreePanel = new JPanel();
     JPanel selectedTreePanel = new JPanel();
 
@@ -95,11 +101,16 @@ public class ClientPanel extends JPanel implements ActionListener {
         usernamePanel.add(fileChooserButton);
         usernameTextField.setPreferredSize(new Dimension(100,10));
 
+        listeningPortPanel.setLayout(new BoxLayout(listeningPortPanel, BoxLayout.X_AXIS));
+        listeningPortPanel.add(listeningPortJLabel);
+        listeningPortPanel.add(listeningPortJTextField);
+
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
 
         inputPanel.add(ipPanel);
         inputPanel.add(portPanel);
         inputPanel.add(usernamePanel);
+        inputPanel.add(listeningPortPanel);
         inputPanel.add(submitButton);
 
         fileTreePane.getViewport().add(fileTree);
@@ -116,6 +127,8 @@ public class ClientPanel extends JPanel implements ActionListener {
         selectedTreePanel.setLayout(new BoxLayout(selectedTreePanel,BoxLayout.Y_AXIS));
         usersListPanel.setPreferredSize(new Dimension(200, 350));
         usersFilesPanel.setPreferredSize(new Dimension(200, 350));
+
+        usersFilesPanel.setLayout(new BoxLayout(usersFilesPanel, BoxLayout.Y_AXIS));
 
         usersListScrollPane.getViewport().add(usersList);
 
@@ -191,6 +204,20 @@ public class ClientPanel extends JPanel implements ActionListener {
 
     }
 
+    private void openListenSocket (int port) {
+
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ClientListeningSocketThread clientListeningSocketThread = ClientListeningSocketThread.getInstance(serverSocket);
+        clientListeningSocketThread.start();
+
+    }
+
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
 
@@ -226,8 +253,11 @@ public class ClientPanel extends JPanel implements ActionListener {
             }
             username = usernameTextField.getText();
 
+            String listeningPortStr = listeningPortJTextField.getText();
+
             try {
                 connectToServer();
+                openListenSocket(Integer.parseInt(listeningPortStr));
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
