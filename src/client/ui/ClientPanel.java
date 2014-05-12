@@ -52,7 +52,7 @@ public class ClientPanel extends JPanel implements ActionListener {
     JPanel usersListPanel = new JPanel();
     JPanel usersFilesPanel = new JPanel();
 
-    JList usersList = new JList();
+    JList<String> usersList = new JList<String>();
 
     JTabbedPane managementPane = new JTabbedPane();
     JScrollPane fileTreePane = new JScrollPane();
@@ -119,21 +119,21 @@ public class ClientPanel extends JPanel implements ActionListener {
 
         usersListScrollPane.getViewport().add(usersList);
 
-        User user1 = new User();
-        user1.alias = "Test1";
-        user1.sharedTree = new DefaultMutableTreeNode("Test1");
-        User user2 = new User();
-        user2.alias = "Test2";
-        user2.sharedTree = new DefaultMutableTreeNode("Test2");
-        usersListSource.add(user1);
-        usersListSource.add(user2);
-
         usersList.addListSelectionListener(new ListSelectionListener() {
+
+            private User findUserByAlias (String alias) {
+                for (User user : usersListSource) {
+                    if (user.getAlias().equals(alias)) {
+                        return user;
+                    }
+                }
+                return null;
+            }
+
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                    DefaultMutableTreeNode root = usersListSource.get(usersList.getSelectedIndex()).getSharedTree();
-                    downloadedFilesTRee = new JTree(root);
-                    usersFilesScrollPane.getViewport().add(new JTree(root));
+                downloadedFilesTRee = new JTree(findUserByAlias(usersList.getSelectedValue()).getSharedTree());
+                usersFilesScrollPane.getViewport().add(downloadedFilesTRee);
             }
         });
 
@@ -147,7 +147,6 @@ public class ClientPanel extends JPanel implements ActionListener {
         usersListPanel.add(usersListScrollPane);
         usersFilesPanel.add(usersFilesScrollPane);
         usersFilesPanel.add(downloadButton);
-        usersFilesPanel.setLayout(new BoxLayout(usersFilesPanel,BoxLayout.Y_AXIS));
 
 
         managementPane.addTab("Sharing", UIManager.getIcon("FileChooser.upFolderIcon"), treesPanel,
@@ -184,7 +183,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         ServerResponse serverResponse = (ServerResponse) objectInputStreamToServer.readObject();
         usersListSource = serverResponse.getUsersList();
 
-        DefaultListModel listModel = new DefaultListModel();
+        DefaultListModel<String> listModel = new DefaultListModel<String>();
         for(User u : usersListSource){
             listModel.addElement(u.getAlias());
         }
