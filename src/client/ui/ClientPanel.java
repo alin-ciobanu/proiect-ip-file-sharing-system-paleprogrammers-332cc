@@ -147,6 +147,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         usersListPanel.add(usersListScrollPane);
         usersFilesPanel.add(usersFilesScrollPane);
         usersFilesPanel.add(downloadButton);
+        usersFilesPanel.setLayout(new BoxLayout(usersFilesPanel,BoxLayout.Y_AXIS));
 
 
         managementPane.addTab("Sharing", UIManager.getIcon("FileChooser.upFolderIcon"), treesPanel,
