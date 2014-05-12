@@ -115,9 +115,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         selectedTreePane.setPreferredSize(new Dimension(200, 350));
         selectedTreePanel.setLayout(new BoxLayout(selectedTreePanel,BoxLayout.Y_AXIS));
         usersListPanel.setPreferredSize(new Dimension(200, 350));
-        //usersListScrollPane.setPreferredSize(new Dimension(200, 350));
         usersFilesPanel.setPreferredSize(new Dimension(200, 350));
-        //usersFilesScrollPane.setPreferredSize(new Dimension(200, 350));
 
         usersListScrollPane.getViewport().add(usersList);
 
@@ -138,13 +136,16 @@ public class ClientPanel extends JPanel implements ActionListener {
         });
 
         DefaultListModel listModel = new DefaultListModel();
+
         for(User u : usersListSource){
             listModel.addElement(u.getAlias());
         }
+
         usersList.setModel(listModel);
-        usersListPanel.add(usersFilesScrollPane);
+        usersListPanel.add(usersListScrollPane);
         usersFilesPanel.add(usersFilesScrollPane);
         usersFilesPanel.add(downloadButton);
+
 
         managementPane.addTab("Sharing", UIManager.getIcon("FileChooser.upFolderIcon"), treesPanel,
                 "Select the files and folders you want to share with other users");
