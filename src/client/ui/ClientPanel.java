@@ -52,7 +52,7 @@ public class ClientPanel extends JPanel implements ActionListener {
     JPanel usersListPanel = new JPanel();
     JPanel usersFilesPanel = new JPanel();
 
-    JList usersList = new JList();
+    JList<String> usersList = new JList<String>();
 
     JTabbedPane managementPane = new JTabbedPane();
     JScrollPane fileTreePane = new JScrollPane();
@@ -119,19 +119,21 @@ public class ClientPanel extends JPanel implements ActionListener {
 
         usersListScrollPane.getViewport().add(usersList);
 
-        User user = new User();
-        user.alias = "Test";
-        user.sharedTree = new DefaultMutableTreeNode("Test");
-        usersListSource.add(user);
-
         usersList.addListSelectionListener(new ListSelectionListener() {
+
+            private User findUserByAlias (String alias) {
+                for (User user : usersListSource) {
+                    if (user.getAlias().equals(alias)) {
+                        return user;
+                    }
+                }
+                return null;
+            }
+
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if(!e.getValueIsAdjusting()){
-                    DefaultMutableTreeNode root = usersListSource.get(usersList.getSelectedIndex()).getSharedTree();
-                    downloadedFilesTRee = new JTree(root);
-                    usersFilesScrollPane.getViewport().add(new JTree(root));
-                }
+                downloadedFilesTRee = new JTree(findUserByAlias(usersList.getSelectedValue()).getSharedTree());
+                usersFilesScrollPane.getViewport().add(downloadedFilesTRee);
             }
         });
 
@@ -181,7 +183,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         ServerResponse serverResponse = (ServerResponse) objectInputStreamToServer.readObject();
         usersListSource = serverResponse.getUsersList();
 
-        DefaultListModel listModel = new DefaultListModel();
+        DefaultListModel<String> listModel = new DefaultListModel<String>();
         for(User u : usersListSource){
             listModel.addElement(u.getAlias());
         }
