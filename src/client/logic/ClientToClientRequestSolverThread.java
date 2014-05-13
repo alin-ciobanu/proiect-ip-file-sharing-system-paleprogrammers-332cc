@@ -1,5 +1,8 @@
 package client.logic;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -43,9 +46,24 @@ public class ClientToClientRequestSolverThread extends Thread {
             }
 
             if (clientToClientRequest.getCode() == ClientToClientRequest.TRANSFER) {
-                /*
-                TODO - Send requested file
-                 */
+
+                String filename = clientToClientRequest.getFilename();
+                File file = new File(filename);
+
+                ClientToClientResponse response = new ClientToClientResponse();
+                response.setFileLength(file.length());
+                try {
+                    response.setFile(FileUtils.readFileToByteArray(file));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
 
         }

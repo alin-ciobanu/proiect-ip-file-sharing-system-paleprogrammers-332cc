@@ -2,6 +2,7 @@ package client.ui;
 
 import client.logic.ClientListeningSocketThread;
 import client.logic.ClientRequest;
+import client.logic.ClientToClientRequestSenderThread;
 import server.logic.ServerResponse;
 import server.logic.User;
 
@@ -179,7 +180,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         this.setVisible(true);
     }
 
-    private void connectToServer () throws IOException, ClassNotFoundException {
+    private void connectToServer (int listeningPort) throws IOException, ClassNotFoundException {
 
         socketToServer = new Socket(ipAddress, port);
         objectOutputStreamToServer = null;
@@ -191,6 +192,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         request.setRequestCode(request.REGISTER);
         request.setUsername(username);
         request.setFileTreeToShare((DefaultMutableTreeNode) selectedFileTree.getModel().getRoot());
+        request.setListeningPort(listeningPort);
         objectOutputStreamToServer.writeObject(request);
 
         ServerResponse serverResponse = (ServerResponse) objectInputStreamToServer.readObject();
@@ -252,17 +254,35 @@ public class ClientPanel extends JPanel implements ActionListener {
                 portTextField.setText("0");
             }
             username = usernameTextField.getText();
-
             String listeningPortStr = listeningPortJTextField.getText();
 
             try {
-                connectToServer();
+                connectToServer(Integer.parseInt(listeningPortStr));
                 openListenSocket(Integer.parseInt(listeningPortStr));
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
+        }
+        else if (actionEvent.getSource() == downloadButton) {
+
+            User selectedUser = findUserByAlias(usersList.getSelectedValue());
+            if (selectedUser == null) {
+                return;
+            }
+            Socket socket;
+            try {
+                socket = new Socket(selectedUser.getIpAddress(), selectedUser.getListeningPort());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            /*
+            TODO - Call download file with correct params
+             */
+//            this.downloadFile();
+
         }
     }
 
@@ -321,6 +341,35 @@ public class ClientPanel extends JPanel implements ActionListener {
         }
 
         return originalNode;
+    }
+
+    private User findUserByAlias (String alias) {
+        for (User user : usersListSource) {
+            if (user.getAlias().equals(alias)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    private void downloadFile (Socket socket, String localFilenameOfFileToBeSaved, String pathToRemoteFile, boolean isDirectory) {
+
+        if (isDirectory) {
+            File dir = new File(localFilenameOfFileToBeSaved);
+            try {
+                dir.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
+        ClientToClientRequestSenderThread senderThread = new ClientToClientRequestSenderThread();
+        senderThread.setLocalPathToFile(localFilenameOfFileToBeSaved);
+        senderThread.setPathToFile(pathToRemoteFile);
+        senderThread.setSocket(socket);
+        senderThread.start();
+
     }
 
 }

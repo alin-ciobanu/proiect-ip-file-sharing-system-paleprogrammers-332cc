@@ -69,6 +69,8 @@ public class ClientTalkerThread extends Thread {
                 user.setAlias(request.getUsername());
                 user.setSharedTree(request.getFileTreeToShare());
                 user.setSocket(clientSocket);
+                user.setIpAddress(clientSocket.getInetAddress().toString());
+                user.setListeningPort(request.getListeningPort());
                 usersList.add(user);
 
                 ServerResponse serverResponse = new ServerResponse();

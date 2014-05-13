@@ -10,9 +10,18 @@ public class ClientRequest implements Serializable {
     public static final int REGISTER = 103;
 
     private int requestCode;
+    private int listeningPort;
 
     private String username;
     private DefaultMutableTreeNode fileTreeToShare;
+
+    public int getListeningPort() {
+        return listeningPort;
+    }
+
+    public void setListeningPort(int listeningPort) {
+        this.listeningPort = listeningPort;
+    }
 
     public DefaultMutableTreeNode getFileTreeToShare() {
         return fileTreeToShare;
