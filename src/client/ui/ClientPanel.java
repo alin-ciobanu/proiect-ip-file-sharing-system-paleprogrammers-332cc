@@ -272,7 +272,7 @@ public class ClientPanel extends JPanel implements ActionListener {
             if (selectedUser == null) {
                 return;
             }
-            Socket socket;
+            Socket socket = new Socket();
             try {
                 socket = new Socket(selectedUser.getIpAddress(), selectedUser.getListeningPort());
             } catch (IOException e) {
@@ -283,7 +283,23 @@ public class ClientPanel extends JPanel implements ActionListener {
             TODO - Call download file with correct params
              */
 //            this.downloadFile();
+            String selectedNodePath = downloadedFilesTRee.getSelectionPath().toString();
+            String fileName = downloadedFilesTRee.getName();
+            selectedNodePath = selectedNodePath.substring(1, selectedNodePath.length() - 1);
+            selectedNodePath = selectedNodePath.replace(", ", "\\");
 
+            WriteFiles(socket, selectedNodePath, fileName);
+        }
+    }
+
+    public void WriteFiles(Socket socket, String remotePath, String localPath){
+        File newFile = new File(localPath);
+        downloadFile(socket,remotePath, localPath);
+        if(newFile.isDirectory()){
+            File[] files = newFile.listFiles();
+            for(File child : files){
+                WriteFiles(socket, remotePath + "\\" + newFile.getName(), localPath + "\\" + newFile.getName());
+            }
         }
     }
 
@@ -353,24 +369,13 @@ public class ClientPanel extends JPanel implements ActionListener {
         return null;
     }
 
-    private void downloadFile (Socket socket, String localFilenameOfFileToBeSaved, String pathToRemoteFile, boolean isDirectory) {
-
-        if (isDirectory) {
-            File dir = new File(localFilenameOfFileToBeSaved);
-            try {
-                dir.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return;
-        }
+    private void downloadFile (Socket socket, String localFilenameOfFileToBeSaved, String pathToRemoteFile) {
 
         ClientToClientRequestSenderThread senderThread = new ClientToClientRequestSenderThread();
         senderThread.setLocalPathToFile(localFilenameOfFileToBeSaved);
         senderThread.setPathToFile(pathToRemoteFile);
         senderThread.setSocket(socket);
         senderThread.start();
-
     }
 
 }
