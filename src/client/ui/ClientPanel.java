@@ -130,6 +130,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         selectedTreePanel.setLayout(new BoxLayout(selectedTreePanel,BoxLayout.Y_AXIS));
         usersListPanel.setPreferredSize(new Dimension(200, 350));
         usersFilesPanel.setPreferredSize(new Dimension(200, 350));
+        downloadButton.addActionListener(this);
 
         usersFilesPanel.setLayout(new BoxLayout(usersFilesPanel, BoxLayout.Y_AXIS));
 
@@ -276,6 +277,7 @@ public class ClientPanel extends JPanel implements ActionListener {
             }
             Socket socket = new Socket();
             try {
+                System.out.println(selectedUser);
                 socket = new Socket(selectedUser.getIpAddress(), selectedUser.getListeningPort());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -295,6 +297,7 @@ public class ClientPanel extends JPanel implements ActionListener {
     }
 
     public void WriteFiles(Socket socket, String remotePath, String localPath){
+        System.out.println("localPath: " + localPath);
         File newFile = new File(localPath);
         downloadFile(socket,remotePath, localPath);
         if(newFile.isDirectory()){
@@ -372,6 +375,9 @@ public class ClientPanel extends JPanel implements ActionListener {
     }
 
     private void downloadFile (Socket socket, String localFilenameOfFileToBeSaved, String pathToRemoteFile) {
+
+        System.out.println("local: " + localFilenameOfFileToBeSaved);
+        System.out.println("remote " + pathToRemoteFile);
 
         ClientToClientRequestSenderThread senderThread = new ClientToClientRequestSenderThread();
         senderThread.setLocalPathToFile(SAVE_FOLDER + localFilenameOfFileToBeSaved);

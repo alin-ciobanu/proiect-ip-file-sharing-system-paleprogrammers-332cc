@@ -14,6 +14,15 @@ public class User implements Serializable {
     private String ipAddress;
     private int listeningPort;
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "alias='" + alias + '\'' +
+                ", ipAddress='" + ipAddress + '\'' +
+                ", listeningPort=" + listeningPort +
+                '}';
+    }
+
     public String getIpAddress() {
         return ipAddress;
     }
