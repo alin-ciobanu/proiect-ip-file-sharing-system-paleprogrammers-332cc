@@ -25,6 +25,8 @@ import java.util.Arrays;
 
 public class ClientPanel extends JPanel implements ActionListener {
 
+    private static final String SAVE_FOLDER = "D:\\IP\\Downloads\\";
+
     Socket socketToServer;
     ServerSocket listenSocket;
     ObjectOutputStream objectOutputStreamToServer;
@@ -372,7 +374,7 @@ public class ClientPanel extends JPanel implements ActionListener {
     private void downloadFile (Socket socket, String localFilenameOfFileToBeSaved, String pathToRemoteFile) {
 
         ClientToClientRequestSenderThread senderThread = new ClientToClientRequestSenderThread();
-        senderThread.setLocalPathToFile(localFilenameOfFileToBeSaved);
+        senderThread.setLocalPathToFile(SAVE_FOLDER + localFilenameOfFileToBeSaved);
         senderThread.setPathToFile(pathToRemoteFile);
         senderThread.setSocket(socket);
         senderThread.start();
