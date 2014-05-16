@@ -22,6 +22,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.StringTokenizer;
 
 public class ClientPanel extends JPanel implements ActionListener {
 
@@ -283,14 +284,21 @@ public class ClientPanel extends JPanel implements ActionListener {
                 e.printStackTrace();
             }
 
-            /*
-            TODO - Call download file with correct params
-             */
-//            this.downloadFile();
             String selectedNodePath = downloadedFilesTRee.getSelectionPath().toString();
-            String fileName = downloadedFilesTRee.getName();
             selectedNodePath = selectedNodePath.substring(1, selectedNodePath.length() - 1);
-            selectedNodePath = selectedNodePath.replace(", ", "\\");
+            selectedNodePath = selectedNodePath.replace(",", "\\");
+            selectedNodePath = selectedNodePath.substring(2, selectedNodePath.length() - 1);
+
+            StringTokenizer stTok = new StringTokenizer(selectedNodePath, "\\");
+            String fileName = "";
+            selectedNodePath = "";
+            while (stTok.hasMoreElements()) {
+                fileName = stTok.nextToken();
+                if (fileName.startsWith(" ")) {
+                    fileName = fileName.replace(" ", "");
+                }
+                selectedNodePath += fileName + "\\";
+            }
 
             WriteFiles(socket, selectedNodePath, fileName);
         }
@@ -298,14 +306,15 @@ public class ClientPanel extends JPanel implements ActionListener {
 
     public void WriteFiles(Socket socket, String remotePath, String localPath){
         System.out.println("localPath: " + localPath);
-        File newFile = new File(localPath);
-        downloadFile(socket,remotePath, localPath);
-        if(newFile.isDirectory()){
+        System.out.println("remotePath: " + remotePath);
+
+        downloadFile(socket, remotePath, localPath);
+/*        if(newFile.isDirectory()){
             File[] files = newFile.listFiles();
             for(File child : files){
                 WriteFiles(socket, remotePath + "\\" + newFile.getName(), localPath + "\\" + newFile.getName());
             }
-        }
+        }*/
     }
 
     public DefaultMutableTreeNode makeTree(DefaultMutableTreeNode root, File file)
@@ -374,7 +383,7 @@ public class ClientPanel extends JPanel implements ActionListener {
         return null;
     }
 
-    private void downloadFile (Socket socket, String localFilenameOfFileToBeSaved, String pathToRemoteFile) {
+    private void downloadFile (Socket socket, String pathToRemoteFile, String localFilenameOfFileToBeSaved) {
 
         System.out.println("local: " + localFilenameOfFileToBeSaved);
         System.out.println("remote " + pathToRemoteFile);
