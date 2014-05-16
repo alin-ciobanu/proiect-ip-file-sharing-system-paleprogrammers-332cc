@@ -25,19 +25,12 @@ public class ClientTalkerThread extends Thread {
         OutputStream outputStream = null;
 
         try {
-            inputStream = clientSocket.getInputStream();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             outputStream = clientSocket.getOutputStream();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        ObjectInputStream objectInputStream = null;
         try {
-            objectInputStream = new ObjectInputStream(inputStream);
+            inputStream = clientSocket.getInputStream();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -49,6 +42,12 @@ public class ClientTalkerThread extends Thread {
             e.printStackTrace();
         }
 
+        ObjectInputStream objectInputStream = null;
+        try {
+            objectInputStream = new ObjectInputStream(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         while (true) {
 

@@ -29,13 +29,17 @@ public class ClientListeningSocketThread extends Thread {
 
         while (true) {
 
-            Socket socket;
+            Socket socket = null;
 
             try {
                 socket = serverSocket.accept();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            ClientToClientRequestSolverThread clientToClientRequestSolverThread =
+                    new ClientToClientRequestSolverThread(socket);
+            clientToClientRequestSolverThread.start();
 
         }
 

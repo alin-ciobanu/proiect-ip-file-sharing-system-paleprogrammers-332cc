@@ -23,12 +23,13 @@ public class ClientToClientRequestSolverThread extends Thread {
         ObjectOutputStream objectOutputStream = null;
 
         try {
-            objectInputStream = new ObjectInputStream(socket.getInputStream());
+            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
+
         try {
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream ());
+            objectInputStream = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -45,6 +46,8 @@ public class ClientToClientRequestSolverThread extends Thread {
                 e.printStackTrace();
             }
 
+            System.out.println("got req " + clientToClientRequest);
+
             if (clientToClientRequest.getCode() == ClientToClientRequest.TRANSFER) {
 
                 String filename = clientToClientRequest.getFilename();
@@ -54,6 +57,12 @@ public class ClientToClientRequestSolverThread extends Thread {
                 response.setFileLength(file.length());
                 try {
                     response.setFile(FileUtils.readFileToByteArray(file));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
+                    objectOutputStream.writeObject(response);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

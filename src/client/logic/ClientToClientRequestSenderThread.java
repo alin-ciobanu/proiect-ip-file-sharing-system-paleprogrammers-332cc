@@ -2,10 +2,7 @@ package client.logic;
 
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class ClientToClientRequestSenderThread extends Thread {
@@ -16,6 +13,15 @@ public class ClientToClientRequestSenderThread extends Thread {
 
     public String getLocalPathToFile() {
         return localPathToFile;
+    }
+
+    @Override
+    public String toString() {
+        return "ClientToClientRequestSenderThread{" +
+                "socket=" + socket +
+                ", pathToFile='" + pathToFile + '\'' +
+                ", localPathToFile='" + localPathToFile + '\'' +
+                '}';
     }
 
     public void setLocalPathToFile(String localPathToFile) {
@@ -41,18 +47,34 @@ public class ClientToClientRequestSenderThread extends Thread {
     @Override
     public void run() {
 
+        InputStream in = null;
+        OutputStream out = null;
+
+        try {
+            out = socket.getOutputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            in = socket.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         ObjectInputStream inputStream = null;
         ObjectOutputStream outputStream = null;
+
         try {
-            inputStream = new ObjectInputStream(socket.getInputStream());
+            outputStream = new ObjectOutputStream(out);
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
-            outputStream = new ObjectOutputStream(socket.getOutputStream());
+            inputStream = new ObjectInputStream(in);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
 
         ClientToClientRequest clientRequest = new ClientToClientRequest();
         clientRequest.setCode(ClientToClientRequest.TRANSFER);

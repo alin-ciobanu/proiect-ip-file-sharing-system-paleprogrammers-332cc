@@ -26,7 +26,7 @@ import java.util.StringTokenizer;
 
 public class ClientPanel extends JPanel implements ActionListener {
 
-    private static final String SAVE_FOLDER = "D:\\IP\\Downloads\\";
+    private static final String SAVE_FOLDER = "D:\\";
 
     Socket socketToServer;
     ServerSocket listenSocket;
@@ -278,7 +278,6 @@ public class ClientPanel extends JPanel implements ActionListener {
             }
             Socket socket = new Socket();
             try {
-                System.out.println(selectedUser);
                 socket = new Socket(selectedUser.getIpAddress(), selectedUser.getListeningPort());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -287,26 +286,27 @@ public class ClientPanel extends JPanel implements ActionListener {
             String selectedNodePath = downloadedFilesTRee.getSelectionPath().toString();
             selectedNodePath = selectedNodePath.substring(1, selectedNodePath.length() - 1);
             selectedNodePath = selectedNodePath.replace(",", "\\");
-            selectedNodePath = selectedNodePath.substring(2, selectedNodePath.length() - 1);
+            selectedNodePath = selectedNodePath.substring(3, selectedNodePath.length());
+
+            System.out.println("selected node path:" + selectedNodePath);
 
             StringTokenizer stTok = new StringTokenizer(selectedNodePath, "\\");
             String fileName = "";
             selectedNodePath = "";
             while (stTok.hasMoreElements()) {
                 fileName = stTok.nextToken();
-                if (fileName.startsWith(" ")) {
-                    fileName = fileName.replace(" ", "");
+                while (fileName.startsWith(" ")) {
+                    fileName = fileName.substring(1, fileName.length());
                 }
                 selectedNodePath += fileName + "\\";
             }
+            selectedNodePath = selectedNodePath.substring(0, selectedNodePath.length() - 1);
 
             WriteFiles(socket, selectedNodePath, fileName);
         }
     }
 
-    public void WriteFiles(Socket socket, String remotePath, String localPath){
-        System.out.println("localPath: " + localPath);
-        System.out.println("remotePath: " + remotePath);
+    private void WriteFiles(Socket socket, String remotePath, String localPath){
 
         downloadFile(socket, remotePath, localPath);
 /*        if(newFile.isDirectory()){
@@ -385,8 +385,8 @@ public class ClientPanel extends JPanel implements ActionListener {
 
     private void downloadFile (Socket socket, String pathToRemoteFile, String localFilenameOfFileToBeSaved) {
 
+        System.out.println("remote: " + pathToRemoteFile);
         System.out.println("local: " + localFilenameOfFileToBeSaved);
-        System.out.println("remote " + pathToRemoteFile);
 
         ClientToClientRequestSenderThread senderThread = new ClientToClientRequestSenderThread();
         senderThread.setLocalPathToFile(SAVE_FOLDER + localFilenameOfFileToBeSaved);

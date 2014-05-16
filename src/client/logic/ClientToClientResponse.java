@@ -1,7 +1,9 @@
 package client.logic;
 
 
-public class ClientToClientResponse {
+import java.io.Serializable;
+
+public class ClientToClientResponse implements Serializable {
 
     public static final int FILE_RESPONSE = 1001;
 

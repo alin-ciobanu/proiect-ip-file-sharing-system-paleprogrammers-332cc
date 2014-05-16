@@ -1,11 +1,21 @@
 package client.logic;
 
-public class ClientToClientRequest {
+import java.io.Serializable;
+
+public class ClientToClientRequest implements Serializable {
 
     public static final int TRANSFER = 100;
 
     String filename;
     int code;
+
+    @Override
+    public String toString() {
+        return "ClientToClientRequest{" +
+                "filename='" + filename + '\'' +
+                ", code=" + code +
+                '}';
+    }
 
     public int getCode() {
         return code;
